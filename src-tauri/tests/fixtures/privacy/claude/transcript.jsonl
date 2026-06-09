@@ -1,0 +1,1 @@
+{"timestamp":"2026-06-09T12:05:00Z","session_id":"claude-secret-session","cwd":"/tmp/tokenscope-private","prompt":"SECRET_PROMPT_SHOULD_NOT_APPEAR","message":{"id":"claude_secret_message","model":"claude-sonnet-4.5","content":"SECRET_RESPONSE_SHOULD_NOT_APPEAR","usage":{"input_tokens":90,"output_tokens":30,"cache_creation_input_tokens":10,"cache_read_input_tokens":20}}}

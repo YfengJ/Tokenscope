@@ -1,0 +1,14 @@
+node_modules/
+dist/
+src-tauri/target/
+.DS_Store
+*.log
+*.tsbuildinfo
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Local planning notes used during development
+task_plan.md
+progress.md
+findings.md

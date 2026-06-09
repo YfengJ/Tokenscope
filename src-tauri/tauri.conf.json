@@ -1,0 +1,90 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "TokenScope",
+  "version": "0.1.0",
+  "identifier": "com.tokenscope.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "TokenScope",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 1040,
+        "minHeight": 720
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "TokenScope Contributors",
+    "homepage": "https://github.com/YfengJ/Tokenscope",
+    "license": "MIT",
+    "licenseFile": "../LICENSE",
+    "category": "DeveloperTool",
+    "shortDescription": "Local-first token usage analytics for AI coding tools.",
+    "longDescription": "TokenScope is a local-first desktop app for inspecting token usage, model mix, source distribution, sessions, and estimated cost across AI coding tools and LLM providers.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "bundleName": "TokenScope",
+      "bundleVersion": "0.1.0",
+      "minimumSystemVersion": "11.0",
+      "hardenedRuntime": true,
+      "signingIdentity": null,
+      "providerShortName": null,
+      "entitlements": null,
+      "dmg": {
+        "windowSize": {
+          "width": 660,
+          "height": 420
+        },
+        "appPosition": {
+          "x": 180,
+          "y": 185
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 185
+        }
+      }
+    },
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "certificateThumbprint": null,
+      "timestampUrl": null,
+      "tsp": false,
+      "allowDowngrades": false,
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "wix": {
+        "upgradeCode": "bffb844e-eddd-5430-ae51-a03e7f65c438",
+        "language": "en-US"
+      },
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "installMode": "currentUser",
+        "languages": ["English"],
+        "displayLanguageSelector": false,
+        "compression": "lzma"
+      }
+    }
+  }
+}

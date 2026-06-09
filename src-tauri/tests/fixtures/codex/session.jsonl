@@ -1,0 +1,2 @@
+{"id":"codex_evt_1","timestamp":"2026-01-02T10:00:00Z","model":"gpt-5-codex","session_id":"codex_session_1","cwd":"/Users/example/TokenScope","prompt":"private prompt text must not be saved","usage":{"input_tokens":120,"output_tokens":45,"cache_read_tokens":15,"cache_write_tokens":5,"reasoning_tokens":10}}
+{"id":"codex_evt_skip","timestamp":"2026-01-02T10:10:00Z","model":"gpt-5-codex","message":"no usage here"}

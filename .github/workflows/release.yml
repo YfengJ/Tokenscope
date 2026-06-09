@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to publish, for example v0.1.0"
+        required: true
+        default: "v0.1.0"
+
+jobs:
+  release:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-arm64
+            platform: macos-latest
+            rust_target: aarch64-apple-darwin
+            args: --target aarch64-apple-darwin
+          - name: macos-x64
+            platform: macos-latest
+            rust_target: x86_64-apple-darwin
+            args: --target x86_64-apple-darwin
+          - name: windows-x64
+            platform: windows-latest
+            rust_target: x86_64-pc-windows-msvc
+            args: --target x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - run: pnpm install
+
+      # These builds are intentionally unsigned for the MVP release pipeline.
+      # Before a public production release, add macOS Developer ID signing,
+      # macOS notarization, and Windows code signing secrets/certificates.
+      # tauri-action uploads generated DMG/app bundle artifacts on macOS and
+      # MSI/NSIS installer artifacts on Windows to the GitHub Release.
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: "TokenScope ${{ inputs.tag_name || github.ref_name }}"
+          releaseBody: "Unsigned TokenScope desktop builds. Production distribution should add macOS notarization and Windows code signing."
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

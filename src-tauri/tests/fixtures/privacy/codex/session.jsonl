@@ -1,0 +1,1 @@
+{"id":"codex_secret_event","timestamp":"2026-06-09T12:00:00Z","model":"gpt-5.5-codex","session_id":"codex-secret-session","cwd":"/tmp/tokenscope-private","prompt":"SECRET_PROMPT_SHOULD_NOT_APPEAR","response":"SECRET_RESPONSE_SHOULD_NOT_APPEAR","usage":{"input_tokens":100,"output_tokens":40,"cache_read_tokens":12,"reasoning_tokens":8}}
