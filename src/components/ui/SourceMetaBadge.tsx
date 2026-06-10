@@ -1,5 +1,6 @@
 import { Badge } from "./Badge";
 import type { Accuracy, SourceType } from "../../lib/types";
+import { normalizeLanguage, type Language } from "../../lib/i18n";
 
 const sourceTypeLabels: Record<SourceType, string> = {
   official_api: "Official API",
@@ -11,11 +12,28 @@ const sourceTypeLabels: Record<SourceType, string> = {
   experimental: "Experimental",
 };
 
+const zhSourceTypeLabels: Record<SourceType, string> = {
+  official_api: "官方 API",
+  local_log: "本地日志",
+  telemetry: "遥测",
+  csv_import: "CSV 导入",
+  manual: "手动",
+  demo: "演示",
+  experimental: "实验性",
+};
+
 const accuracyLabels: Record<Accuracy, string> = {
   high: "High",
   medium: "Medium",
   low: "Low",
   experimental: "Experimental",
+};
+
+const zhAccuracyLabels: Record<Accuracy, string> = {
+  high: "高",
+  medium: "中",
+  low: "低",
+  experimental: "实验性",
 };
 
 const sourceTypeTones: Record<SourceType, "neutral" | "green" | "amber" | "cyan"> = {
@@ -44,12 +62,15 @@ export function getAccuracyLabel(value: Accuracy) {
 }
 
 type SourceMetaBadgeProps =
-  | { kind: "sourceType"; value: SourceType }
-  | { kind: "accuracy"; value: Accuracy };
+  | { kind: "sourceType"; value: SourceType; language?: Language }
+  | { kind: "accuracy"; value: Accuracy; language?: Language };
 
 export function SourceMetaBadge(props: SourceMetaBadgeProps) {
+  const language = normalizeLanguage(props.language);
   if (props.kind === "sourceType") {
-    return <Badge tone={sourceTypeTones[props.value]}>{sourceTypeLabels[props.value]}</Badge>;
+    const labels = language === "zh" ? zhSourceTypeLabels : sourceTypeLabels;
+    return <Badge tone={sourceTypeTones[props.value]}>{labels[props.value]}</Badge>;
   }
-  return <Badge tone={accuracyTones[props.value]}>{accuracyLabels[props.value]}</Badge>;
+  const labels = language === "zh" ? zhAccuracyLabels : accuracyLabels;
+  return <Badge tone={accuracyTones[props.value]}>{labels[props.value]}</Badge>;
 }

@@ -76,6 +76,13 @@ export function Settings() {
     setDraft((current) => (current ? { ...current, ...next } : current));
   }
 
+  function saveLanguage(nextLanguage: Language) {
+    if (!draft) return;
+    const next: AppSettings = { ...draft, language: nextLanguage };
+    setDraft(next);
+    void updateSettings(next);
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
@@ -103,22 +110,22 @@ export function Settings() {
       </SettingsSection>
 
       <SettingsSection title={isZh ? "数据源" : "Sources"} body={isZh ? "本地日志路径和供应商配置占位。" : "Local log paths and provider configuration stubs."} icon={KeyRound}>
-          <SettingRow title="Codex home path" body={isZh ? "macOS/Linux 默认是 ~/.codex，Windows 默认是 %USERPROFILE%\\.codex。" : "Default is ~/.codex on macOS/Linux and %USERPROFILE%\\.codex on Windows."}>
+          <SettingRow title={isZh ? "Codex home 路径" : "Codex home path"} body={isZh ? "macOS/Linux 默认是 ~/.codex，Windows 默认是 %USERPROFILE%\\.codex。" : "Default is ~/.codex on macOS/Linux and %USERPROFILE%\\.codex on Windows."}>
             <Input value={draft.codex_home_path} onChange={(event) => patch({ codex_home_path: event.target.value })} />
           </SettingRow>
-          <SettingRow title="Claude home path" body={isZh ? "macOS/Linux 默认是 ~/.claude，Windows 默认是 %USERPROFILE%\\.claude。" : "Default is ~/.claude on macOS/Linux and %USERPROFILE%\\.claude on Windows."}>
+          <SettingRow title={isZh ? "Claude home 路径" : "Claude home path"} body={isZh ? "macOS/Linux 默认是 ~/.claude，Windows 默认是 %USERPROFILE%\\.claude。" : "Default is ~/.claude on macOS/Linux and %USERPROFILE%\\.claude on Windows."}>
             <Input value={draft.claude_home_path} onChange={(event) => patch({ claude_home_path: event.target.value })} />
           </SettingRow>
           <SettingRow title="OpenAI API" body={isZh ? "0.1.0 只有配置界面；真实网络同步尚未实现。" : "Configuration UI is present; real network sync is mocked in this MVP."}>
             <div className="flex items-center gap-2">
               <Input type="password" placeholder="sk-... secure storage later" disabled />
-              <Badge>{draft.openai_configured ? "Configured" : "Mock"}</Badge>
+              <Badge>{draft.openai_configured ? (isZh ? "已配置" : "Configured") : isZh ? "模拟" : "Mock"}</Badge>
             </div>
           </SettingRow>
           <SettingRow title="Anthropic API" body={isZh ? "0.1.0 只有配置界面；真实网络同步尚未实现。" : "Configuration UI is present; real network sync is mocked in this MVP."}>
             <div className="flex items-center gap-2">
               <Input type="password" placeholder="sk-ant-... secure storage later" disabled />
-              <Badge>{draft.anthropic_configured ? "Configured" : "Mock"}</Badge>
+              <Badge>{draft.anthropic_configured ? (isZh ? "已配置" : "Configured") : isZh ? "模拟" : "Mock"}</Badge>
             </div>
           </SettingRow>
       </SettingsSection>
@@ -151,26 +158,26 @@ export function Settings() {
           <SettingRow title={isZh ? "界面语言" : "Interface language"} body={isZh ? "切换应用外壳和设置页语言。" : "Switch the app shell and Settings page language."}>
             <div className="flex items-center gap-2">
               <Languages className="h-4 w-4 text-muted-foreground" />
-              <Select value={language} onChange={(event) => patch({ language: event.target.value as Language })}>
+              <Select value={language} onChange={(event) => saveLanguage(event.target.value as Language)}>
                 <option value="en">{languageLabels.en}</option>
                 <option value="zh">{languageLabels.zh}</option>
               </Select>
             </div>
           </SettingRow>
           <SettingRow title={isZh ? "主题" : "Theme"} body={isZh ? "使用顶部栏按钮切换深色和浅色模式。" : "Use the top bar toggle to switch between dark and light modes."}>
-            <Badge tone="cyan">Dark first</Badge>
+            <Badge tone="cyan">{isZh ? "深色优先" : "Dark first"}</Badge>
           </SettingRow>
           <SettingRow title={isZh ? "数字样式" : "Numeric style"} body={isZh ? "Token 数和费用使用等宽数字，方便扫描表格。" : "Token counts and costs use tabular numerals for scan-friendly tables."}>
-            <Badge>Tabular nums</Badge>
+            <Badge>{isZh ? "等宽数字" : "Tabular nums"}</Badge>
           </SettingRow>
       </SettingsSection>
 
       <SettingsSection title={isZh ? "开发者" : "Developer"} body={isZh ? "MVP 实现说明和实验性解析器标记。" : "MVP implementation notes and experimental parser flags."} icon={Code2}>
           <SettingRow title={isZh ? "本地解析器状态" : "Local parser status"} body={isZh ? "Codex 和 Claude Code 解析器仍是实验性能力，需要持续增加 fixture。" : "Codex and Claude Code parsers are experimental and should be extended with fixtures."}>
-            <Badge tone="cyan">Experimental</Badge>
+            <Badge tone="cyan">{isZh ? "实验性" : "Experimental"}</Badge>
           </SettingRow>
           <SettingRow title={isZh ? "安全存储抽象" : "Secure storage abstraction"} body={isZh ? "API key UI 只是脚手架；真实 key 持久化刻意延后。" : "API key UI is scaffolded; real key persistence is intentionally deferred."}>
-            <Badge tone="amber">Not storing keys</Badge>
+            <Badge tone="amber">{isZh ? "不存储 key" : "Not storing keys"}</Badge>
           </SettingRow>
       </SettingsSection>
     </div>

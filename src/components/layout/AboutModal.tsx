@@ -39,7 +39,7 @@ export function AboutModal() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-base font-semibold">{isZh ? "关于 TokenScope" : "About TokenScope"}</h2>
-                    <Badge tone="cyan">Version 0.1.0</Badge>
+                    <Badge tone="cyan">{isZh ? "版本 0.1.0" : "Version 0.1.0"}</Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {isZh ? "面向 AI 编程工具的本地优先 token 分析。" : "Local-first token analytics for AI coding tools."}

@@ -1,0 +1,2 @@
+{"type":"turn_context","timestamp":"2026-06-10T05:00:00Z","payload":{"model":"gpt-5.5","collaboration_mode":{"settings":{"model":"gpt-5.5"}},"cwd":"/Users/example/TokenScope"}}
+{"type":"event_msg","timestamp":"2026-06-10T05:01:00Z","payload":{"turn_id":"turn-current-1","info":{"last_token_usage":{"input_tokens":29627,"cached_input_tokens":7552,"output_tokens":1061,"reasoning_output_tokens":516,"total_tokens":30688},"total_token_usage":{"input_tokens":66281,"cached_input_tokens":38144,"output_tokens":1914,"reasoning_output_tokens":1032,"total_tokens":68195}}}}

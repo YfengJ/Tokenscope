@@ -50,14 +50,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   async reloadEvents() {
     const state = get();
-    const events = await listUsageEvents({
-      range: state.range,
-      query: state.query,
-      source: state.selectedSource,
-      model: state.selectedModel,
-    });
-    const sourceStatuses = await listSourceStatus();
-    set({ events, sourceStatuses });
+    const [events, sourceStatuses, settings] = await Promise.all([
+      listUsageEvents({
+        range: state.range,
+        query: state.query,
+        source: state.selectedSource,
+        model: state.selectedModel,
+      }),
+      listSourceStatus(),
+      getSettings(),
+    ]);
+    set({ events, sourceStatuses, settings });
   },
   setRange(range) {
     set({ range });

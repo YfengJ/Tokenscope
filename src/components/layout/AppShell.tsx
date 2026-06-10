@@ -78,7 +78,9 @@ export function AppShell({ activeRoute, onRouteChange, children }: AppShellProps
             </div>
             <div>
               <div className="text-sm font-semibold">TokenScope</div>
-              <div className="text-xs text-muted-foreground">Local usage analytics</div>
+              <div className="text-xs text-muted-foreground">
+                {language === "zh" ? "本地用量分析" : "Local usage analytics"}
+              </div>
             </div>
           </div>
 

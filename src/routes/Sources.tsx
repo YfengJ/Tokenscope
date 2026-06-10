@@ -10,6 +10,7 @@ import { SourceMetaBadge } from "../components/ui/SourceMetaBadge";
 import { SourceStatusBadge } from "../components/ui/SourceStatusBadge";
 import { Table, Td, Th } from "../components/ui/Table";
 import type { SourceStatus, UsageEvent } from "../lib/types";
+import { normalizeLanguage } from "../lib/i18n";
 
 function SourceIcon({ source }: { source: SourceStatus["source"] }) {
   if (source === "codex" || source === "claude_code" || source === "gemini_cli") return <Terminal className="h-5 w-5" />;
@@ -23,6 +24,34 @@ export function Sources() {
   const settings = useAppStore((state) => state.settings);
   const reloadEvents = useAppStore((state) => state.reloadEvents);
   const [csvPreview, setCsvPreview] = useState<{ path: string; rows: UsageEvent[] } | null>(null);
+  const language = normalizeLanguage(settings?.language);
+  const isZh = language === "zh";
+
+  function actionLabel(action: SourceStatus["action"]) {
+    if (!isZh) return action;
+    if (action === "Configure") return "配置";
+    if (action === "Scan") return "扫描";
+    if (action === "Import") return "导入";
+    return "即将推出";
+  }
+
+  function sourceDescription(source: SourceStatus) {
+    if (!isZh) return source.description;
+    const descriptions: Partial<Record<SourceStatus["source"], string>> = {
+      codex: "扫描本地 JSONL 会话，不导入 prompt 内容。",
+      claude_code: "解析 Claude Code message usage metadata，并按 message id 去重。",
+      openai_api: "0.1.0 只有配置界面；真实网络同步尚未实现。",
+      anthropic_api: "0.1.0 只有配置界面；真实网络同步尚未实现。",
+      openrouter: "连接器接口预留给后续版本。",
+      litellm: "Proxy 日志摄取计划在本地解析器稳定后加入。",
+      cursor: "遥测可用性取决于本地导出支持。",
+      copilot: "预留给未来的官方或本地遥测路径。",
+      gemini_cli: "首个 MVP 尚未包含本地解析器。",
+      manual_import: "从通用 CSV 文件导入 metadata 列。",
+      demo: "用于首次体验的确定性本地样本数据。",
+    };
+    return descriptions[source.source] ?? source.description;
+  }
 
   async function chooseCsvPath() {
     try {
@@ -33,7 +62,7 @@ export function Sources() {
       if (Array.isArray(selected)) return selected[0] ?? null;
       return selected;
     } catch {
-      return window.prompt("CSV file path");
+      return window.prompt(isZh ? "CSV 文件路径" : "CSV file path");
     }
   }
 
@@ -60,9 +89,11 @@ export function Sources() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold">Sources</h2>
+        <h2 className="text-xl font-semibold">{isZh ? "数据源" : "Sources"}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Connector readiness, sync freshness, source type, and parser accuracy.
+          {isZh
+            ? "查看连接器状态、同步时间、来源类型和解析准确性。"
+            : "Connector readiness, sync freshness, source type, and parser accuracy."}
         </p>
       </div>
 
@@ -77,31 +108,31 @@ export function Sources() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="truncate text-sm font-semibold">{source.label}</h3>
-                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{source.description}</p>
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{sourceDescription(source)}</p>
                   </div>
                 </div>
-                <SourceStatusBadge status={source.status} />
+                <SourceStatusBadge status={source.status} language={language} />
               </div>
 
               <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <div className="text-muted-foreground">Type</div>
+                  <div className="text-muted-foreground">{isZh ? "类型" : "Type"}</div>
                   <div className="mt-1">
-                    <SourceMetaBadge kind="sourceType" value={source.source_type} />
+                    <SourceMetaBadge kind="sourceType" value={source.source_type} language={language} />
                   </div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground">Accuracy</div>
+                  <div className="text-muted-foreground">{isZh ? "准确性" : "Accuracy"}</div>
                   <div className="mt-1">
-                    <SourceMetaBadge kind="accuracy" value={source.accuracy} />
+                    <SourceMetaBadge kind="accuracy" value={source.accuracy} language={language} />
                   </div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground">Last sync</div>
+                  <div className="text-muted-foreground">{isZh ? "最近同步" : "Last sync"}</div>
                   <div className="mt-1">{formatDateTime(source.last_sync)}</div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground">Events</div>
+                  <div className="text-muted-foreground">{isZh ? "事件数" : "Events"}</div>
                   <div className="mt-1 font-mono">{source.event_count.toLocaleString()}</div>
                 </div>
               </div>
@@ -113,7 +144,7 @@ export function Sources() {
                 onClick={() => void runAction(source)}
               >
                 {source.action === "Configure" ? <Settings className="h-4 w-4" /> : null}
-                {source.action}
+                {actionLabel(source.action)}
               </Button>
             </CardContent>
           </Card>
@@ -126,10 +157,10 @@ export function Sources() {
             <CardContent className="p-0">
               <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold">CSV Preview</h3>
+                  <h3 className="text-sm font-semibold">{isZh ? "CSV 预览" : "CSV Preview"}</h3>
                   <p className="mt-1 truncate text-xs text-muted-foreground">{csvPreview.path}</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setCsvPreview(null)} title="Close preview">
+                <Button variant="ghost" size="icon" onClick={() => setCsvPreview(null)} title={isZh ? "关闭预览" : "Close preview"}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -137,12 +168,12 @@ export function Sources() {
                 <Table>
                   <thead>
                     <tr>
-                      <Th>Timestamp</Th>
-                      <Th>Source</Th>
-                      <Th>Model</Th>
-                      <Th>Session</Th>
+                      <Th>{isZh ? "时间" : "Timestamp"}</Th>
+                      <Th>{isZh ? "来源" : "Source"}</Th>
+                      <Th>{isZh ? "模型" : "Model"}</Th>
+                      <Th>{isZh ? "会话" : "Session"}</Th>
                       <Th className="text-right">Total</Th>
-                      <Th className="text-right">Cost</Th>
+                      <Th className="text-right">{isZh ? "费用" : "Cost"}</Th>
                     </tr>
                   </thead>
                   <tbody>
@@ -161,7 +192,7 @@ export function Sources() {
                     {!csvPreview.rows.length ? (
                       <tr>
                         <Td colSpan={6} className="py-10 text-center text-muted-foreground">
-                          No importable usage rows found.
+                          {isZh ? "没有找到可导入的 usage 行。" : "No importable usage rows found."}
                         </Td>
                       </tr>
                     ) : null}
@@ -170,10 +201,10 @@ export function Sources() {
               </div>
               <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
                 <Button variant="ghost" onClick={() => setCsvPreview(null)}>
-                  Cancel
+                  {isZh ? "取消" : "Cancel"}
                 </Button>
                 <Button variant="primary" disabled={!csvPreview.rows.length} onClick={() => void confirmCsvImport()}>
-                  Import {csvPreview.rows.length} previewed rows
+                  {isZh ? `导入 ${csvPreview.rows.length} 行预览数据` : `Import ${csvPreview.rows.length} previewed rows`}
                 </Button>
               </div>
             </CardContent>

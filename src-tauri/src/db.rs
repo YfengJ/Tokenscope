@@ -14,9 +14,12 @@ impl Database {
         let conn = Connection::open(path)?;
         let db = Self { conn };
         db.init_schema()?;
-        let settings = db.get_settings()?;
+        let mut settings = db.get_settings()?;
         db.delete_demo_events()?;
-        if settings.demo_data_enabled {
+        if settings.demo_data_enabled && db.real_usage_event_count()? > 0 {
+            settings.demo_data_enabled = false;
+            db.save_settings(&settings)?;
+        } else if settings.demo_data_enabled {
             db.insert_usage_events(&demo_events())?;
         }
         Ok(db)
@@ -131,6 +134,14 @@ impl Database {
         self.conn
             .execute("DELETE FROM usage_events WHERE id LIKE 'demo-%'", [])?;
         Ok(())
+    }
+
+    fn real_usage_event_count(&self) -> Result<i64> {
+        Ok(self.conn.query_row(
+            "SELECT COUNT(*) FROM usage_events WHERE source != 'demo' AND source_type != 'demo'",
+            [],
+            |row| row.get(0),
+        )?)
     }
 
     pub fn all_usage_events(&self) -> Result<Vec<UsageEvent>> {

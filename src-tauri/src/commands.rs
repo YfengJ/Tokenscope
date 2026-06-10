@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
 use tauri::State;
 
-use crate::db::demo_events;
+use crate::db::{demo_events, Database};
 use crate::models::{
     AppSettings, BreakdownPoint, DashboardSummary, ModelStat, SessionStat, SourceStatus, SummaryCardData,
     TokenSpike, TrendPoint, UsageEvent, UsageFilters,
@@ -26,6 +26,18 @@ fn expand_home(path: Option<String>, fallback: &str) -> PathBuf {
         }
     }
     PathBuf::from(raw)
+}
+
+fn insert_real_usage_events(db: &Database, events: &[UsageEvent]) -> CommandResult<()> {
+    if !events.is_empty() {
+        db.delete_demo_events().map_err(|err| err.to_string())?;
+        let mut settings = db.get_settings().map_err(|err| err.to_string())?;
+        if settings.demo_data_enabled {
+            settings.demo_data_enabled = false;
+            db.save_settings(&settings).map_err(|err| err.to_string())?;
+        }
+    }
+    db.insert_usage_events(events).map_err(|err| err.to_string())
 }
 
 fn parse_time(value: &str) -> Option<DateTime<Utc>> {
@@ -345,7 +357,7 @@ pub fn scan_codex(state: State<AppState>, path: Option<String>) -> CommandResult
     let root = expand_home(path, "~/.codex");
     let events = scanner::codex::scan(&root).map_err(|err| err.to_string())?;
     let db = lock_db(&state)?;
-    db.insert_usage_events(&events).map_err(|err| err.to_string())?;
+    insert_real_usage_events(&db, &events)?;
     Ok(events)
 }
 
@@ -354,7 +366,7 @@ pub fn scan_claude(state: State<AppState>, path: Option<String>) -> CommandResul
     let root = expand_home(path, "~/.claude");
     let events = scanner::claude::scan(&root).map_err(|err| err.to_string())?;
     let db = lock_db(&state)?;
-    db.insert_usage_events(&events).map_err(|err| err.to_string())?;
+    insert_real_usage_events(&db, &events)?;
     Ok(events)
 }
 
@@ -373,7 +385,7 @@ pub fn import_csv(state: State<AppState>, path: String) -> CommandResult<Vec<Usa
     }
     let events = scanner::csv::import(&PathBuf::from(path)).map_err(|err| err.to_string())?;
     let db = lock_db(&state)?;
-    db.insert_usage_events(&events).map_err(|err| err.to_string())?;
+    insert_real_usage_events(&db, &events)?;
     Ok(events)
 }
 
@@ -461,5 +473,42 @@ mod tests {
         let stats = model_stats(&events);
         assert_eq!(stats[0].total_tokens, 185);
         assert_eq!(stats[0].sessions_count, 1);
+    }
+
+    #[test]
+    fn real_import_disables_demo_data_when_events_exist() {
+        let db = Database::open_memory().expect("memory database");
+        let mut settings = AppSettings::default();
+        settings.demo_data_enabled = true;
+        db.save_settings(&settings).expect("save settings");
+        db.insert_usage_events(&demo_events()).expect("insert demo");
+
+        let real_event = UsageEvent {
+            id: "codex-real-1".to_string(),
+            source: "codex".to_string(),
+            source_type: "local_log".to_string(),
+            timestamp: Utc::now().to_rfc3339(),
+            project_name: Some("TokenScope".to_string()),
+            session_id: Some("real-session".to_string()),
+            model: "gpt-5.5".to_string(),
+            provider: Some("OpenAI".to_string()),
+            input_tokens: 100,
+            output_tokens: 50,
+            cache_read_tokens: 20,
+            cache_write_tokens: 0,
+            reasoning_tokens: 10,
+            total_tokens: 150,
+            estimated_cost_usd: Some(0.01),
+            duration_ms: None,
+            raw_ref: None,
+            accuracy: "experimental".to_string(),
+        };
+
+        insert_real_usage_events(&db, &[real_event]).expect("insert real usage");
+
+        let stored = db.all_usage_events().expect("stored events");
+        assert!(stored.iter().all(|event| event.source != "demo"));
+        assert!(stored.iter().any(|event| event.source == "codex" && event.model == "gpt-5.5"));
+        assert!(!db.get_settings().expect("settings").demo_data_enabled);
     }
 }

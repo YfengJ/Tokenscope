@@ -10,6 +10,7 @@ import { Select } from "../components/ui/Select";
 import { Table, Td, Th } from "../components/ui/Table";
 import { SourceMetaBadge } from "../components/ui/SourceMetaBadge";
 import type { TimeRangeId } from "../lib/types";
+import { normalizeLanguage } from "../lib/i18n";
 
 type Density = "compact" | "comfortable";
 
@@ -21,8 +22,11 @@ export function Sessions() {
   const selectedModel = useAppStore((state) => state.selectedModel);
   const setSelectedSource = useAppStore((state) => state.setSelectedSource);
   const setSelectedModel = useAppStore((state) => state.setSelectedModel);
+  const settings = useAppStore((state) => state.settings);
   const [dateRange, setDateRange] = useState<TimeRangeId>(range);
   const [density, setDensity] = useState<Density>("comfortable");
+  const language = normalizeLanguage(settings?.language);
+  const isZh = language === "zh";
 
   const sources = useMemo(() => Array.from(new Set(events.map((event) => event.source))).sort(), [events]);
   const models = useMemo(() => Array.from(new Set(events.map((event) => event.model))).sort(), [events]);
@@ -47,18 +51,20 @@ export function Sessions() {
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
         <div>
-          <h2 className="text-xl font-semibold">Sessions</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Search and filter individual usage events.</p>
+          <h2 className="text-xl font-semibold">{isZh ? "会话" : "Sessions"}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isZh ? "搜索和筛选单条 usage 事件。" : "Search and filter individual usage events."}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Select value={dateRange} onChange={(event) => setDateRange(event.target.value as TimeRangeId)}>
-            <option value="today">Today</option>
-            <option value="3d">Last 3 days</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
+            <option value="today">{isZh ? "今天" : "Today"}</option>
+            <option value="3d">{isZh ? "最近 3 天" : "Last 3 days"}</option>
+            <option value="7d">{isZh ? "最近 7 天" : "Last 7 days"}</option>
+            <option value="30d">{isZh ? "最近 30 天" : "Last 30 days"}</option>
           </Select>
           <Select value={selectedSource ?? "all"} onChange={(event) => setSelectedSource(event.target.value as typeof selectedSource)}>
-            <option value="all">All sources</option>
+            <option value="all">{isZh ? "全部来源" : "All sources"}</option>
             {sources.map((source) => (
               <option key={source} value={source}>
                 {toTitle(source)}
@@ -66,7 +72,7 @@ export function Sessions() {
             ))}
           </Select>
           <Select value={selectedModel ?? "all"} onChange={(event) => setSelectedModel(event.target.value)}>
-            <option value="all">All models</option>
+            <option value="all">{isZh ? "全部模型" : "All models"}</option>
             {models.map((model) => (
               <option key={model} value={model}>
                 {model}
@@ -75,10 +81,10 @@ export function Sessions() {
           </Select>
           <div className="flex rounded-md border border-border bg-background p-0.5">
             <Button size="sm" variant={density === "compact" ? "primary" : "ghost"} onClick={() => setDensity("compact")}>
-              Compact
+              {isZh ? "紧凑" : "Compact"}
             </Button>
             <Button size="sm" variant={density === "comfortable" ? "primary" : "ghost"} onClick={() => setDensity("comfortable")}>
-              Comfortable
+              {isZh ? "舒适" : "Comfortable"}
             </Button>
           </div>
         </div>
@@ -86,8 +92,8 @@ export function Sessions() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Usage Events</CardTitle>
-          <Badge>{filtered.length.toLocaleString()} rows</Badge>
+          <CardTitle>{isZh ? "Usage 事件" : "Usage Events"}</CardTitle>
+          <Badge>{filtered.length.toLocaleString()} {isZh ? "行" : "rows"}</Badge>
         </CardHeader>
         <CardContent className="p-0">
           {filtered.length ? (
@@ -95,17 +101,17 @@ export function Sessions() {
               <Table>
                 <thead>
                   <tr>
-                    <Th className="sticky top-0 z-10 bg-panel">Timestamp</Th>
-                    <Th className="sticky top-0 z-10 bg-panel">Source</Th>
-                    <Th className="sticky top-0 z-10 bg-panel">Model</Th>
-                    <Th className="sticky top-0 z-10 bg-panel">Project</Th>
-                    <Th className="sticky top-0 z-10 bg-panel">Session</Th>
-                    <Th className="sticky top-0 z-10 bg-panel text-right">Input</Th>
-                    <Th className="sticky top-0 z-10 bg-panel text-right">Output</Th>
-                    <Th className="sticky top-0 z-10 bg-panel text-right">Cached</Th>
-                    <Th className="sticky top-0 z-10 bg-panel text-right">Reasoning</Th>
+                    <Th className="sticky top-0 z-10 bg-panel">{isZh ? "时间" : "Timestamp"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel">{isZh ? "来源" : "Source"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel">{isZh ? "模型" : "Model"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel">{isZh ? "项目" : "Project"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel">{isZh ? "会话" : "Session"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel text-right">{isZh ? "输入" : "Input"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel text-right">{isZh ? "输出" : "Output"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel text-right">{isZh ? "缓存" : "Cached"}</Th>
+                    <Th className="sticky top-0 z-10 bg-panel text-right">{isZh ? "推理" : "Reasoning"}</Th>
                     <Th className="sticky top-0 z-10 bg-panel text-right">Total</Th>
-                    <Th className="sticky top-0 z-10 bg-panel text-right">Cost</Th>
+                    <Th className="sticky top-0 z-10 bg-panel text-right">{isZh ? "费用" : "Cost"}</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -115,12 +121,12 @@ export function Sessions() {
                       <Td className={cellDensity}>
                         <div className="font-medium">{toTitle(event.source)}</div>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          <SourceMetaBadge kind="sourceType" value={event.source_type} />
-                          <SourceMetaBadge kind="accuracy" value={event.accuracy} />
+                          <SourceMetaBadge kind="sourceType" value={event.source_type} language={language} />
+                          <SourceMetaBadge kind="accuracy" value={event.accuracy} language={language} />
                         </div>
                       </Td>
                       <Td className={cellDensity}>{event.model}</Td>
-                      <Td className={cellDensity}>{event.project_name ?? "Unknown"}</Td>
+                      <Td className={cellDensity}>{event.project_name ?? (isZh ? "未知" : "Unknown")}</Td>
                       <Td className={`max-w-48 truncate font-mono text-xs text-muted-foreground ${cellDensity}`}>
                         {event.session_id ?? event.id}
                       </Td>
@@ -140,8 +146,8 @@ export function Sessions() {
           ) : (
             <div className="p-5">
               <EmptyState
-                title="No sessions match these filters"
-                body="Try widening the date range, clearing search, or choosing all sources and models."
+                title={isZh ? "没有匹配这些筛选条件的会话" : "No sessions match these filters"}
+                body={isZh ? "试着扩大日期范围、清空搜索，或选择全部来源和模型。" : "Try widening the date range, clearing search, or choosing all sources and models."}
                 action={
                   <Button
                     onClick={() => {
@@ -150,7 +156,7 @@ export function Sessions() {
                       setSelectedModel("all");
                     }}
                   >
-                    Reset filters
+                    {isZh ? "重置筛选" : "Reset filters"}
                   </Button>
                 }
               />

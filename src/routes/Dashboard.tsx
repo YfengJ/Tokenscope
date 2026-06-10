@@ -20,6 +20,14 @@ const cardRanges: Array<{ label: string; range: TimeRangeId }> = [
   { label: "30 Days", range: "30d" },
 ];
 
+const zhCardLabels: Record<TimeRangeId, string> = {
+  today: "今天",
+  "3d": "3 天",
+  "7d": "7 天",
+  "30d": "30 天",
+  custom: "自定义",
+};
+
 export function Dashboard() {
   const events = useAppStore((state) => state.events);
   const range = useAppStore((state) => state.range);
@@ -92,7 +100,9 @@ export function Dashboard() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">{display.label}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {isZh ? zhCardLabels[display.range] : display.label}
+                    </p>
                     <p className="mt-2 font-mono text-2xl font-semibold tracking-normal tabular-nums">
                       {formatTokens(card.total_tokens)}
                     </p>
@@ -105,18 +115,20 @@ export function Dashboard() {
                 <div className="mt-3">
                   <SparklineChart data={sparkline} positive={positive} />
                 </div>
-                <div className="mt-4 text-xs text-muted-foreground">Compared with previous period</div>
+                <div className="mt-4 text-xs text-muted-foreground">
+                  {isZh ? "与上一周期相比" : "Compared with previous period"}
+                </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
                   <div>
-                    <div className="text-muted-foreground">Cost</div>
+                    <div className="text-muted-foreground">{isZh ? "费用" : "Cost"}</div>
                     <div className="mt-1 font-mono tabular-nums">{formatCurrency(card.estimated_cost_usd)}</div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">Input</div>
+                    <div className="text-muted-foreground">{isZh ? "输入" : "Input"}</div>
                     <div className="mt-1 font-mono tabular-nums">{formatTokens(card.input_tokens)}</div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">Output</div>
+                    <div className="text-muted-foreground">{isZh ? "输出" : "Output"}</div>
                     <div className="mt-1 font-mono tabular-nums">{formatTokens(card.output_tokens)}</div>
                   </div>
                 </div>
@@ -129,7 +141,7 @@ export function Dashboard() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.8fr)]">
         <Card>
           <CardHeader>
-            <CardTitle>Daily Token Trend</CardTitle>
+            <CardTitle>{isZh ? "每日 Token 趋势" : "Daily Token Trend"}</CardTitle>
           </CardHeader>
           <CardContent>
             <TokenTrendChart data={summary.daily_trend} />
@@ -137,7 +149,7 @@ export function Dashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Source Distribution</CardTitle>
+            <CardTitle>{isZh ? "来源分布" : "Source Distribution"}</CardTitle>
           </CardHeader>
           <CardContent>
             <SourceDonutChart data={summary.tokens_by_source} />
@@ -148,7 +160,7 @@ export function Dashboard() {
       <div className="grid gap-5 xl:grid-cols-[minmax(360px,0.85fr)_minmax(0,1.15fr)]">
         <Card>
           <CardHeader>
-            <CardTitle>Model Usage</CardTitle>
+            <CardTitle>{isZh ? "模型用量" : "Model Usage"}</CardTitle>
           </CardHeader>
           <CardContent>
             <ModelBarChart data={summary.tokens_by_model} />
@@ -156,25 +168,27 @@ export function Dashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Top Expensive Sessions</CardTitle>
-            {settings?.hide_project_names ? <Badge>Projects hidden</Badge> : null}
+            <CardTitle>{isZh ? "高费用会话" : "Top Expensive Sessions"}</CardTitle>
+            {settings?.hide_project_names ? <Badge>{isZh ? "项目已隐藏" : "Projects hidden"}</Badge> : null}
           </CardHeader>
           <CardContent className="overflow-x-auto p-0">
             <Table>
               <thead>
                 <tr>
-                  <Th>Session</Th>
-                  <Th>Source</Th>
-                  <Th>Model</Th>
-                  <Th className="text-right">Tokens</Th>
-                  <Th className="text-right">Cost</Th>
+                  <Th>{isZh ? "会话" : "Session"}</Th>
+                  <Th>{isZh ? "来源" : "Source"}</Th>
+                  <Th>{isZh ? "模型" : "Model"}</Th>
+                  <Th className="text-right">{isZh ? "Tokens" : "Tokens"}</Th>
+                  <Th className="text-right">{isZh ? "费用" : "Cost"}</Th>
                 </tr>
               </thead>
               <tbody>
                 {summary.top_expensive_sessions.map((session) => (
                   <tr key={session.session_id} className="transition hover:bg-muted/30">
                     <Td>
-                      <div className="font-medium">{settings?.hide_project_names ? "Private project" : session.project_name}</div>
+                      <div className="font-medium">
+                        {settings?.hide_project_names ? (isZh ? "私有项目" : "Private project") : session.project_name}
+                      </div>
                       <div className="text-xs text-muted-foreground">{session.session_id}</div>
                     </Td>
                     <Td>{toTitle(session.source)}</Td>
@@ -190,8 +204,8 @@ export function Dashboard() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Token Spikes</CardTitle>
+          <CardHeader>
+          <CardTitle>{isZh ? "Token 峰值" : "Token Spikes"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

@@ -16,7 +16,13 @@ fn codex_fixture_parses_usage_without_prompt_text() {
     let event = &events[0];
     assert_eq!(event.source, "codex");
     assert_eq!(event.accuracy, "experimental");
-    assert_eq!(event.total_tokens, 195);
+    assert_eq!(event.model, "gpt-5.5");
+    assert_eq!(event.project_name.as_deref(), Some("TokenScope"));
+    assert_eq!(event.input_tokens, 29627);
+    assert_eq!(event.cache_read_tokens, 7552);
+    assert_eq!(event.output_tokens, 1061);
+    assert_eq!(event.reasoning_tokens, 516);
+    assert_eq!(event.total_tokens, 30688);
     let serialized = serde_json::to_string(event).unwrap();
     assert!(!serialized.contains("private prompt"));
 }
@@ -93,6 +99,31 @@ fn source_status_marks_demo_connected_only_when_demo_events_exist() {
     let populated_demo = populated_statuses.iter().find(|status| status.source == "demo").unwrap();
     assert_eq!(populated_demo.status, "connected");
     assert!(populated_demo.event_count > 0);
+}
+
+#[test]
+fn database_open_disables_demo_when_real_events_exist() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    let db_path = temp.path().join("tokenscope.sqlite");
+    {
+        let db = Database::open(&db_path).expect("open database");
+        let mut settings = tokenscope_lib::models::AppSettings::default();
+        settings.demo_data_enabled = true;
+        db.save_settings(&settings).expect("save settings");
+        db.insert_usage_events(&demo_events()).expect("insert demo events");
+        let mut real_event = demo_events().remove(0);
+        real_event.id = "codex-real-open".to_string();
+        real_event.source = "codex".to_string();
+        real_event.source_type = "local_log".to_string();
+        real_event.model = "gpt-5.5".to_string();
+        db.insert_usage_events(&[real_event]).expect("insert real event");
+    }
+
+    let reopened = Database::open(&db_path).expect("reopen database");
+    let events = reopened.all_usage_events().expect("events");
+    assert!(events.iter().all(|event| event.source != "demo"));
+    assert!(events.iter().any(|event| event.source == "codex"));
+    assert!(!reopened.get_settings().expect("settings").demo_data_enabled);
 }
 
 #[test]
