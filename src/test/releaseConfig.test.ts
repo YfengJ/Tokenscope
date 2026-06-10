@@ -63,6 +63,7 @@ describe("release configuration", () => {
     expect(workflow).toContain("windows-x64");
     expect(workflow).toContain("tauri-apps/tauri-action@v0");
     expect(workflow).toContain("contents: write");
+    expect(workflow).toContain("max-parallel: 1");
     expect(workflow).toContain("releaseDraft: true");
     expect(workflow).toContain("DMG");
     expect(workflow).toContain("MSI/NSIS");
