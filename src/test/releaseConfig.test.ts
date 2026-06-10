@@ -8,6 +8,10 @@ function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(join(root, path), "utf8")) as T;
 }
 
+function lineCount(path: string) {
+  return readFileSync(join(root, path), "utf8").split(/\r?\n/).length;
+}
+
 describe("release configuration", () => {
   it("configures Tauri identity, version, bundle targets, and icons", () => {
     const pkg = readJson<{ version: string }>("package.json");
@@ -104,5 +108,22 @@ describe("release configuration", () => {
     expect(config.version).toBe(pkg.version);
     expect(changelog).toContain(`## ${pkg.version}`);
     expect(release).toContain(`v${pkg.version}`);
+  });
+
+  it("keeps public markdown and workflow files readable", () => {
+    const readme = readFileSync(join(root, "README.md"), "utf8");
+    const zhReadme = readFileSync(join(root, "README.zh-CN.md"), "utf8");
+    const ciWorkflow = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8");
+    const releaseWorkflow = readFileSync(join(root, ".github/workflows/release.yml"), "utf8");
+
+    expect(lineCount("README.md")).toBeGreaterThan(50);
+    expect(lineCount("README.zh-CN.md")).toBeGreaterThan(40);
+    expect(lineCount(".github/workflows/ci.yml")).toBeGreaterThan(20);
+    expect(lineCount(".github/workflows/release.yml")).toBeGreaterThan(35);
+    expect(readme).toContain("| Source | Status | Type | Accuracy |");
+    expect(zhReadme).toContain("| 数据源 | 状态 | 类型 | 准确性 |");
+    expect(releaseWorkflow).toContain("releaseDraft: true");
+    expect(releaseWorkflow).toContain("workflow_dispatch:");
+    expect(ciWorkflow).toContain("pnpm typecheck");
   });
 });

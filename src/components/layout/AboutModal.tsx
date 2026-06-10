@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Github, Info, ShieldCheck, X } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
@@ -17,8 +17,28 @@ const supportedSources = [
 
 export function AboutModal() {
   const [open, setOpen] = useState(false);
+  const titleId = useId();
   const language = normalizeLanguage(useAppStore((state) => state.settings?.language));
   const isZh = language === "zh";
+
+  useEffect(() => {
+    if (!open) return;
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    function closeOnRouteChange() {
+      setOpen(false);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("hashchange", closeOnRouteChange);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("hashchange", closeOnRouteChange);
+    };
+  }, [open]);
 
   return (
     <>
@@ -27,25 +47,45 @@ export function AboutModal() {
         size="icon"
         title={isZh ? "关于 TokenScope" : "About TokenScope"}
         aria-label="About TokenScope"
-        onClick={() => setOpen(true)}
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
       >
         <Info className="h-4 w-4" />
       </Button>
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/72 p-4 backdrop-blur-md">
-          <Card className="w-full max-w-2xl overflow-hidden shadow-glow">
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-background/72 p-4 pt-8 backdrop-blur-md sm:items-center sm:pt-4"
+          data-testid="about-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setOpen(false);
+          }}
+        >
+          <Card
+            aria-labelledby={titleId}
+            aria-modal="true"
+            className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto shadow-glow"
+            role="dialog"
+          >
             <CardContent className="p-0">
               <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-semibold">{isZh ? "关于 TokenScope" : "About TokenScope"}</h2>
+                    <h2 id={titleId} className="text-base font-semibold">
+                      {isZh ? "关于 TokenScope" : "About TokenScope"}
+                    </h2>
                     <Badge tone="cyan">{isZh ? "版本 0.1.0" : "Version 0.1.0"}</Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {isZh ? "面向 AI 编程工具的本地优先 token 分析。" : "Local-first token analytics for AI coding tools."}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" title={isZh ? "关闭" : "Close"} onClick={() => setOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title={isZh ? "关闭" : "Close"}
+                  aria-label={isZh ? "关闭" : "Close"}
+                  onClick={() => setOpen(false)}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
