@@ -81,6 +81,21 @@ fn demo_events_do_not_masquerade_as_real_sources() {
 }
 
 #[test]
+fn source_status_marks_demo_connected_only_when_demo_events_exist() {
+    let db = Database::open_memory().expect("memory database");
+    let empty_statuses = db.source_statuses().expect("source statuses");
+    let empty_demo = empty_statuses.iter().find(|status| status.source == "demo").unwrap();
+    assert_eq!(empty_demo.status, "needs_config");
+    assert_eq!(empty_demo.event_count, 0);
+
+    db.insert_usage_events(&demo_events()).expect("insert demo usage");
+    let populated_statuses = db.source_statuses().expect("source statuses");
+    let populated_demo = populated_statuses.iter().find(|status| status.source == "demo").unwrap();
+    assert_eq!(populated_demo.status, "connected");
+    assert!(populated_demo.event_count > 0);
+}
+
+#[test]
 fn aggregation_returns_summary_cards_and_model_breakdown() {
     let mut events = scanner::csv::import(&fixture("usage.csv")).expect("csv fixture imports");
     events[0].timestamp = chrono::Utc::now().to_rfc3339();

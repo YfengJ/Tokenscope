@@ -226,16 +226,24 @@ impl Database {
 
         Ok(descriptors
             .into_iter()
-            .map(|(source, label, source_type, status, accuracy, action, description)| SourceStatus {
-                source: source.to_string(),
-                label: label.to_string(),
-                source_type: source_type.to_string(),
-                status: status.to_string(),
-                accuracy: accuracy.to_string(),
-                last_sync: last_sync.get(source).cloned(),
-                event_count: *counts.get(source).unwrap_or(&0),
-                action: action.to_string(),
-                description: description.to_string(),
+            .map(|(source, label, source_type, status, accuracy, action, description)| {
+                let event_count = *counts.get(source).unwrap_or(&0);
+                let resolved_status = if source == "demo" && event_count == 0 {
+                    "needs_config"
+                } else {
+                    status
+                };
+                SourceStatus {
+                    source: source.to_string(),
+                    label: label.to_string(),
+                    source_type: source_type.to_string(),
+                    status: resolved_status.to_string(),
+                    accuracy: accuracy.to_string(),
+                    last_sync: last_sync.get(source).cloned(),
+                    event_count,
+                    action: action.to_string(),
+                    description: description.to_string(),
+                }
             })
             .collect())
     }

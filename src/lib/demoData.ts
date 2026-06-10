@@ -219,7 +219,7 @@ export function createDemoSourceStatuses(now = new Date()): SourceStatus[] {
       source: "demo",
       label: "Demo data",
       source_type: "demo",
-      status: "connected",
+      status: "needs_config",
       accuracy: "high",
       last_sync: null,
       event_count: 0,

@@ -26,6 +26,7 @@ describe("demo data", () => {
     const statuses = createDemoSourceStatuses(new Date("2026-06-09T12:00:00"));
     expect(statuses.map((status) => status.source)).toContain("manual_import");
     expect(statuses.find((status) => status.source === "openai_api")?.status).toBe("needs_config");
+    expect(statuses.find((status) => status.source === "demo")?.status).toBe("needs_config");
     expect(statuses.find((status) => status.source === "claude_code")?.event_count).toBe(0);
     expect(statuses.find((status) => status.source === "codex")?.event_count).toBe(0);
   });

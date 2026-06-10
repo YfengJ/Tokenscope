@@ -11,6 +11,7 @@ import { Badge } from "../components/ui/Badge";
 import { FirstRunGuide } from "../components/onboarding/FirstRunGuide";
 import { SparklineChart } from "../components/charts/SparklineChart";
 import type { TimeRangeId } from "../lib/types";
+import { normalizeLanguage } from "../lib/i18n";
 
 const cardRanges: Array<{ label: string; range: TimeRangeId }> = [
   { label: "Today", range: "today" },
@@ -27,6 +28,9 @@ export function Dashboard() {
   const summary = buildDashboardSummary(events, range);
   const sourceCount = new Set(events.map((event) => event.source)).size;
   const sessionCount = new Set(events.map((event) => event.session_id ?? event.id)).size;
+  const isZh = normalizeLanguage(settings?.language) === "zh";
+  const hasDemoEvents = events.some((event) => event.source === "demo" || event.source_type === "demo");
+  const hasRealEvents = events.some((event) => event.source !== "demo" && event.source_type !== "demo");
 
   if (!events.length) {
     return <FirstRunGuide onEnableDemo={() => void toggleDemoData(true)} />;
@@ -38,37 +42,40 @@ export function Dashboard() {
         <div className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_24rem] md:p-6">
           <div className="max-w-3xl">
             <div className="flex flex-wrap gap-2">
-              <Badge tone="cyan">Local-first analytics</Badge>
-              {settings?.demo_data_enabled ? <Badge>Demo data enabled</Badge> : null}
+              <Badge tone="cyan">{isZh ? "本地优先分析" : "Local-first analytics"}</Badge>
+              {settings?.demo_data_enabled || hasDemoEvents ? <Badge>{isZh ? "演示数据" : "Demo data"}</Badge> : null}
+              {hasRealEvents ? <Badge>{isZh ? "真实/扫描数据" : "Scanned or imported data"}</Badge> : null}
             </div>
             <h2 className="mt-4 max-w-2xl text-2xl font-semibold tracking-normal text-foreground md:text-3xl">
-              Your AI token usage, across every coding tool.
+              {isZh ? "查看每个 AI 编程工具的 token 使用情况。" : "Your AI token usage, across every coding tool."}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Monitor recent token volume, model distribution, source mix, sessions, and estimated cost without storing prompt or response content.
+              {isZh
+                ? "监控近期 token 数、模型分布、来源组合、会话和预估费用，同时默认不存储 prompt 或 response 内容。"
+                : "Monitor recent token volume, model distribution, source mix, sessions, and estimated cost without storing prompt or response content."}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
             <div className="rounded-lg border border-border bg-background/80 p-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Boxes className="h-3.5 w-3.5 text-accent" />
-                Sources indexed
+                {isZh ? "已索引来源" : "Sources indexed"}
               </div>
               <div className="mt-2 font-mono text-xl font-semibold">{sourceCount}</div>
             </div>
             <div className="rounded-lg border border-border bg-background/80 p-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock3 className="h-3.5 w-3.5 text-accent" />
-                Sessions tracked
+                {isZh ? "已跟踪会话" : "Sessions tracked"}
               </div>
               <div className="mt-2 font-mono text-xl font-semibold">{sessionCount.toLocaleString()}</div>
             </div>
             <div className="rounded-lg border border-border bg-background/80 p-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-                Prompt storage
+                {isZh ? "Prompt 存储" : "Prompt storage"}
               </div>
-              <div className="mt-2 text-sm font-medium">Off by default</div>
+              <div className="mt-2 text-sm font-medium">{isZh ? "默认关闭" : "Off by default"}</div>
             </div>
           </div>
         </div>

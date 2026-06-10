@@ -2,11 +2,15 @@
 
 [中文说明](README.zh-CN.md)
 
-TokenScope is a local-first desktop analytics app for AI coding tool and LLM provider token usage. It helps developers inspect recent token volume, model mix, source mix, time trends, session-level estimated cost, and spikes without uploading usage data by default.
+TokenScope is a local-first desktop analytics app for AI coding tool and LLM provider token usage.
+It helps developers inspect recent token volume, model mix, source mix, time trends,
+session-level estimated cost, and spikes without uploading usage data by default.
 
 ## Why TokenScope
 
-AI coding tools now run across CLIs, IDEs, provider APIs, and local logs. TokenScope gives those events a single local dashboard so teams can understand spend, catch spikes, and compare model usage while keeping prompts out of the database.
+AI coding tools now run across CLIs, IDEs, provider APIs, and local logs.
+TokenScope gives those events a single local dashboard so teams can understand spend,
+catch spikes, and compare model usage while keeping prompts out of the database.
 
 ## Supported Sources
 
@@ -72,11 +76,16 @@ Real images should be saved under `docs/screenshots/` before the first public re
 
 ## Accuracy
 
-Estimated cost is approximate. Accuracy depends on source. Official API sources are designed to be high accuracy once network sync is implemented, but API connectors are not fully implemented in 0.1.0. Local log parsers are experimental because log formats can change and may omit fields. CSV imports are medium accuracy because TokenScope trusts the provided columns.
+Estimated cost is approximate. Accuracy depends on source. Official API sources are designed
+to be high accuracy once network sync is implemented, but API connectors are not fully
+implemented in 0.1.0. Local log parsers are experimental because log formats can change and
+may omit fields. CSV imports are medium accuracy because TokenScope trusts the provided columns.
 
 ## Privacy
 
-TokenScope is local-first. The MVP does not upload data by default and does not call LLM APIs. TokenScope does not store prompt or response content by default. Parsers extract token metadata, model, source, timestamp, project/session identifiers, and safe raw references.
+TokenScope is local-first. The MVP does not upload data by default and does not call LLM APIs.
+TokenScope does not store prompt or response content by default. Parsers extract token metadata,
+model, source, timestamp, project/session identifiers, and safe raw references.
 
 ## Development Setup
 

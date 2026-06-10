@@ -104,9 +104,11 @@ export async function listSourceStatus(): Promise<SourceStatus[]> {
       const lastSync = sourceEvents
         .map((event) => event.timestamp)
         .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? null;
+      const eventCount = sourceEvents.length;
       return {
         ...status,
-        event_count: sourceEvents.length,
+        status: status.source === "demo" && eventCount === 0 ? "needs_config" : status.status,
+        event_count: eventCount,
         last_sync: lastSync,
       };
     });
